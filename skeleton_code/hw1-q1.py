@@ -46,7 +46,13 @@ class Perceptron(LinearModel):
         other arguments are ignored
         """
         # Q1.1a
-        raise NotImplementedError
+        y_hat = np.argmax(self.W.dot(x_i))
+        if y_hat != y_i:
+            # Perceptron update.
+            #w += eta * (y - y_hat) * x
+            self.W[y_i, :] += x_i
+            self.W[y_hat, :] -= x_i
+
 
 
 class LogisticRegression(LinearModel):
@@ -145,6 +151,7 @@ def main():
     train_loss = []
     valid_accs = []
     train_accs = []
+    test_accs = []
     
     for i in epochs:
         print('Training epoch {}'.format(i))
@@ -164,16 +171,17 @@ def main():
                 learning_rate=opt.learning_rate
             )
         
+        test_accs.append(model.evaluate(test_X, test_y))
         train_accs.append(model.evaluate(train_X, train_y))
         valid_accs.append(model.evaluate(dev_X, dev_y))
         if opt.model == 'mlp':
             print('loss: {:.4f} | train acc: {:.4f} | val acc: {:.4f}'.format(
-                loss, train_accs[-1], valid_accs[-1],
+                loss, train_accs[-1], valid_accs[-1]
             ))
             train_loss.append(loss)
         else:
-            print('train acc: {:.4f} | val acc: {:.4f}'.format(
-                 train_accs[-1], valid_accs[-1],
+            print('train acc: {:.4f} | val acc: {:.4f} | test acc: {:.4f}'.format(
+                 train_accs[-1], valid_accs[-1],test_accs[-1]
             ))
     print('Final test acc: {:.4f}'.format(
         model.evaluate(test_X, test_y)
