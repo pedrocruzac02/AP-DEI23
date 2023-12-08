@@ -46,12 +46,11 @@ class Perceptron(LinearModel):
         other arguments are ignored
         """
         # Q1.1a
-        y_hat = np.argmax(self.W.dot(x_i))
-        if y_hat != y_i:
-            # Perceptron update.
-            #w += eta * (y - y_hat) * x
-            self.W[y_i, :] += x_i
-            self.W[y_hat, :] -= x_i
+        eta = 1 #default value
+        y_pred = np.argmax(self.W.dot(x_i))
+        if y_pred != y_i:
+            self.W[y_i, :] += eta * x_i
+            self.W[y_pred, :] -= eta * x_i
 
 
 
@@ -63,7 +62,19 @@ class LogisticRegression(LinearModel):
         learning_rate (float): keep it at the default value for your plots
         """
         # Q1.1b
-        raise NotImplementedError
+         # Label scores according to the model (num_labels x 1).
+        label_scores = self.W.dot(x_i)[:, None]
+        
+        # One-hot vector with the true label (num_labels x 1).
+        y_one_hot = np.zeros((np.size(self.W, 0), 1))
+        y_one_hot[y_i] = 1
+        
+        # Softmax function.
+        # This gives the label probabilities according to the model (num_labels x 1).
+        label_probabilities = np.exp(label_scores) / np.sum(np.exp(label_scores))
+        # SGD update. W is num_labels x num_features.
+        self.W += learning_rate * (y_one_hot - label_probabilities) * x_i[None, :]
+
 
 
 class MLP(object):
@@ -185,6 +196,12 @@ def main():
             ))
     print('Final test acc: {:.4f}'.format(
         model.evaluate(test_X, test_y)
+        ))
+    print('Final train acc: {:.4f}'.format(
+        model.evaluate(train_X, train_y)
+        ))
+    print('Final validation acc: {:.4f}'.format(
+        model.evaluate(dev_X, dev_y)
         ))
 
     # plot
