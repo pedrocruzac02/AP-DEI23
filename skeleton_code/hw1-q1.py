@@ -83,13 +83,90 @@ class MLP(object):
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
-        raise NotImplementedError
+        w1 = np.random.normal(0.1,0.1,size=(hidden_size,n_features))
+        w2 = np.random.normal(0.1,0.1,size=(n_classes,hidden_size))
+        b1 = np.zeros(hidden_size) 
+        b2 = np.zeros(n_classes)
+
+        self.W = [w1,w2]
+        self.B = [b1,b2]
+        self.n_classes=n_classes
+
+    def ReLU(self, x):
+        return (x > 0) * x 
+
+    def derivateReLu(self, x):
+        return (x > 0) * 1
+
+      
+    def forward(self, x):
+        hiddens = []
+        num_layers = len(self.W)
+        activation = self.ReLU
+        for i in range(num_layers):
+            h = x if i == 0 else hiddens[i-1]
+            z = self.W[i].dot(h) + self.B[i]
+            if i < num_layers-1:  #output layer has other activation 
+                hiddens.append(activation(z))
+        return z, hiddens
+
+    def compute_loss(self , output, y):
+        # softmax transformation.
+        output -= np.max(output)
+        probs = np.exp(output) / np.sum(np.exp(output))
+        return probs 
+
+    def compute_label_probabilities(self, output):
+        # softmax transformation.
+        probs = np.exp(output) / np.sum(np.exp(output))
+        return probs
+
+    def backward(self,x, y, output, hiddens):
+        probs = self.compute_label_probabilities(output)
+
+        y_one_hot_vector = np.zeros((self.n_classes,))
+        y_one_hot_vector[y] = 1
+        
+        grad_z = probs - y_one_hot_vector # Grad of loss w.r.t. last z
+
+        grad_weights = []
+        grad_biases = []
+
+        num_layers = len(self.W)
+        for i in range(num_layers-1, -1, -1):
+            # dL/dW = dL/dz . h^T
+            h = x if i == 0 else hiddens[i-1]
+            grad_weights.append(grad_z[:, None].dot(h[:, None].T))
+            
+            # dL/db = dL/dz
+            grad_biases.append(grad_z)
+
+            # dL/dh[i-1] = W[i]^T . dL/dz[i] 
+            grad_h = self.W[i].T.dot(grad_z)
+            # dL /dz = dL/dh * dh/dz
+            grad_z = grad_h * self.derivateReLu(h)
+
+        grad_weights.reverse()
+        grad_biases.reverse()
+        return grad_weights, grad_biases
+
+    def predict_label(self, output):
+        # The most probable label is also the label with the largest logit.
+        y_pred = np.zeros_like(output)
+        y_pred[np.argmax(output)] = 1
+        return y_pred
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        raise NotImplementedError
+        predicted_labels = []
+        for x in X:
+            output, _ = self.forward(x)
+            y_hat = self.predict_label(output)
+            predicted_labels.append(y_hat)
+        predicted_labels = np.array(predicted_labels)
+        return predicted_labels
 
     def evaluate(self, X, y):
         """
@@ -106,7 +183,17 @@ class MLP(object):
         """
         Dont forget to return the loss of the epoch.
         """
-        raise NotImplementedError
+        for x_i, y_i in zip(X, y):
+          output, hiddens = self.forward(x_i)
+          #loss = self.compute_loss(output, y_i)
+          grad_weights, grad_biases = self.backward(x_i, y_i, output, hiddens)
+          self.update_parameters(grad_weights, grad_biases, learning_rate=0.001)
+
+    def update_parameters(self, grad_weights, grad_biases, learning_rate):
+        num_layers = len(self.W)
+        for i in range(num_layers):
+            self.W[i] -= learning_rate*grad_weights[i]
+            self.B[i] -= learning_rate*grad_biases[i]
 
 
 def plot(epochs, train_accs, val_accs):
