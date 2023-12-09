@@ -90,7 +90,7 @@ class MLP(object):
 
         self.W = [w1,w2]
         self.B = [b1,b2]
-        self.n_classes=n_classes
+        self.n_classes=n_classes #4
 
     def ReLU(self, x):
         return (x > 0) * x 
@@ -98,7 +98,6 @@ class MLP(object):
     def derivateReLu(self, x):
         return (x > 0) * 1
 
-      
     def forward(self, x):
         hiddens = []
         num_layers = len(self.W)
@@ -160,13 +159,12 @@ class MLP(object):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        predicted_labels = []
-        for x in X:
-            output, _ = self.forward(x)
-            y_hat = self.predict_label(output)
-            predicted_labels.append(y_hat)
-        predicted_labels = np.array(predicted_labels)
-        return predicted_labels
+        predicted_labels = np.empty(X.shape[0])
+        for i in range(X.shape[0]):
+            output, _ = self.forward(X[i])
+            y_hat = np.argmax(self.predict_label(output))
+            predicted_labels[i] = y_hat
+        return predicted_labels  
 
     def evaluate(self, X, y):
         """
@@ -183,11 +181,14 @@ class MLP(object):
         """
         Dont forget to return the loss of the epoch.
         """
-        for x_i, y_i in zip(X, y):
-          output, hiddens = self.forward(x_i)
-          #loss = self.compute_loss(output, y_i)
-          grad_weights, grad_biases = self.backward(x_i, y_i, output, hiddens)
-          self.update_parameters(grad_weights, grad_biases, learning_rate=0.001)
+        print('Learning Rate',learning_rate);
+        for x, y in zip(X, y):
+          output, hiddens = self.forward(x)
+          loss = self.compute_loss(output, y)
+          grad_weights, grad_biases = self.backward(x, y, output, hiddens)
+          self.update_parameters(grad_weights, grad_biases,learning_rate)
+          print("Loss:",loss)
+          return loss
 
     def update_parameters(self, grad_weights, grad_biases, learning_rate):
         num_layers = len(self.W)
@@ -257,11 +258,13 @@ def main():
         train_X = train_X[train_order]
         train_y = train_y[train_order]
         if opt.model == 'mlp':
+            print("IM IN MLP")
             loss = model.train_epoch(
                 train_X,
                 train_y,
                 learning_rate=opt.learning_rate
             )
+            print(loss)
         else:
             model.train_epoch(
                 train_X,
@@ -274,9 +277,9 @@ def main():
         valid_accs.append(model.evaluate(dev_X, dev_y))
         if opt.model == 'mlp':
             print('loss: {:.4f} | train acc: {:.4f} | val acc: {:.4f}'.format(
-                loss, train_accs[-1], valid_accs[-1]
+                loss[-1], train_accs[-1], valid_accs[-1]
             ))
-            train_loss.append(loss)
+            train_loss.append(loss[-1])
         else:
             print('train acc: {:.4f} | val acc: {:.4f} | test acc: {:.4f}'.format(
                  train_accs[-1], valid_accs[-1],test_accs[-1]
