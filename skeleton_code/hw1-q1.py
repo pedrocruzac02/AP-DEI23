@@ -99,30 +99,36 @@ class MLP(object):
         return (x > 0) * 1
 
     def forward(self, x):
-        hiddens = []
         num_layers = len(self.W)
         activation = self.ReLU
+        hiddens = []
         for i in range(num_layers):
             h = x if i == 0 else hiddens[i-1]
             z = self.W[i].dot(h) + self.B[i]
-            if i < num_layers-1:  #output layer has other activation 
+            if i < num_layers-1: 
                 hiddens.append(activation(z))
-        return z, hiddens
+        output = z
+        return output, hiddens
 
-    def compute_loss(self , output, y):
-        # softmax transformation.
-        output -= np.max(output)
-        probs = np.exp(output) / np.sum(np.exp(output))
-        return probs 
 
     def compute_label_probabilities(self, output):
         # softmax transformation.
         probs = np.exp(output) / np.sum(np.exp(output))
         return probs
 
-    def backward(self,x, y, output, hiddens):
+    def compute_loss(self , output, y):
+        # compute loss 
+        y_one_hot_vector = np.zeros((self.n_classes,))
+        y_one_hot_vector[y] = 1
         probs = self.compute_label_probabilities(output)
+        probs_log = np.log(probs)
+        loss = -y_one_hot_vector.dot(np.log(probs))
+        return loss 
 
+    def backward(self,x, y, output, hiddens):
+        output -= output.max()    
+        probs = self.compute_label_probabilities(output)
+    
         y_one_hot_vector = np.zeros((self.n_classes,))
         y_one_hot_vector[y] = 1
         
@@ -177,17 +183,17 @@ class MLP(object):
         n_possible = y.shape[0]
         return n_correct / n_possible
 
-    def train_epoch(self, X, y, learning_rate=0.001):
+    def train_epoch(self, X, Y, learning_rate=0.001):
         """
         Dont forget to return the loss of the epoch.
         """
-        print('Learning Rate',learning_rate);
-        for x, y in zip(X, y):
+        for x, y in zip(X, Y):
+          # Compute foward pass
           output, hiddens = self.forward(x)
           loss = self.compute_loss(output, y)
           grad_weights, grad_biases = self.backward(x, y, output, hiddens)
           self.update_parameters(grad_weights, grad_biases,learning_rate)
-          print("Loss:",loss)
+          #print("Loss:",loss)
           return loss
 
     def update_parameters(self, grad_weights, grad_biases, learning_rate):
@@ -258,13 +264,11 @@ def main():
         train_X = train_X[train_order]
         train_y = train_y[train_order]
         if opt.model == 'mlp':
-            print("IM IN MLP")
             loss = model.train_epoch(
                 train_X,
                 train_y,
                 learning_rate=opt.learning_rate
             )
-            print(loss)
         else:
             model.train_epoch(
                 train_X,
@@ -277,9 +281,9 @@ def main():
         valid_accs.append(model.evaluate(dev_X, dev_y))
         if opt.model == 'mlp':
             print('loss: {:.4f} | train acc: {:.4f} | val acc: {:.4f}'.format(
-                loss[-1], train_accs[-1], valid_accs[-1]
+                loss, train_accs[-1], valid_accs[-1]
             ))
-            train_loss.append(loss[-1])
+            train_loss.append(loss)
         else:
             print('train acc: {:.4f} | val acc: {:.4f} | test acc: {:.4f}'.format(
                  train_accs[-1], valid_accs[-1],test_accs[-1]
