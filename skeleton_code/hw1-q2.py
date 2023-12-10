@@ -31,7 +31,7 @@ class LogisticRegression(nn.Module):
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
         self.layer = nn.Linear(n_features,n_classes)
-        self.activation = nn.Sigmoid()
+        self.activation = nn.Softmax()
 
     def forward(self, x, **kwargs):
         """
