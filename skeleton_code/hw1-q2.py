@@ -5,6 +5,7 @@
 import argparse
 
 import torch
+from torch.nn.modules import Dropout
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from matplotlib import pyplot as plt
@@ -24,9 +25,9 @@ class LogisticRegression(nn.Module):
         parameters the module has. For example, a logistic regression module
         has a weight matrix and bias vector. For an idea of how to use
         pytorch to make weights and biases, have a look at
-        https://pytorch.org/docs/stable/nn.html
+        https://pytorch.org/ docs/stable/nn.html
         """
-        super().__init__()
+        super(LogisticRegression,self).__init__()
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
         self.layer = nn.Linear(n_features,n_classes)
@@ -66,9 +67,36 @@ class FeedforwardNetwork(nn.Module):
         attributes that each FeedforwardNetwork instance has. Note that nn
         includes modules for several activation functions and dropout as well.
         """
-        super().__init__()
-        # Implement me!
-        raise NotImplementedError
+        super(FeedforwardNetwork,self).__init__()
+        print("Activation:",activation_type)
+        self.activation = nn.ReLU()
+        print("Hidden Size:",hidden_size)
+        print("Number Layers:",layers)
+        print("Dropout:",dropout)
+
+        self.ff = nn.Sequential()
+        self.dropout = nn.Dropout(dropout)
+
+  
+        self.input = nn.Linear(n_features,hidden_size)
+        self.hidden = nn.Linear(hidden_size,hidden_size)
+        self.output = nn.Linear(hidden_size,n_classes)
+
+        #Input Layer
+        print("Self.Activation:",self.activation)
+        #print("Self.Activation_type:",self.activation_type)
+        self.ff.append(self.input)
+        self.ff.append(self.activation)
+        self.ff.append(self.dropout)
+
+        #Middle Layers
+        for i in range (1,layers):
+          self.ff.append(self.hidden)
+          self.ff.append(self.activation)
+          self.ff.append(self.dropout)
+
+        #Ouput Layer
+        self.ff.append(self.output)
 
     def forward(self, x, **kwargs):
         """
@@ -78,7 +106,7 @@ class FeedforwardNetwork(nn.Module):
         the output logits from x. This will include using various hidden
         layers, pointwise nonlinear functions, and dropout.
         """
-        raise NotImplementedError
+        return self.ff(x)
 
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -188,6 +216,7 @@ def main():
     if opt.model == 'logistic_regression':
         model = LogisticRegression(n_classes, n_feats)
     else:
+        print("Activation Type:",opt.activation)
         model = FeedforwardNetwork(
             n_classes,
             n_feats,
@@ -214,6 +243,10 @@ def main():
     train_losses = []
     valid_losses = []
     valid_accs = []
+    print("Learning Rate",opt.learning_rate)
+    print("Batch Size",opt.batch_size)
+    print("L2 Regularization",opt.l2_decay)
+    print("Optimizer:",opt.optimizer)
     for ii in epochs:
         print('Training epoch {}'.format(ii))
         epoch_train_losses = []
