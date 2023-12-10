@@ -29,6 +29,7 @@ class LogisticRegression(nn.Module):
         super().__init__()
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
+        self.layer = nn.Linear(n_features,n_classes)
 
     def forward(self, x, **kwargs):
         """
@@ -44,7 +45,8 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        raise NotImplementedError
+        x = self.layer(x)
+        return x
 
 
 # Q2.2
@@ -97,8 +99,17 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    raise NotImplementedError
-
+    #clear gradients
+    optimizer.zero_grad()
+    #compute model output
+    yhat = model(X)
+    #calculate loss
+    loss = criterion(yhat,y)
+    #credit assignment
+    loss.backward()
+    #update model weights
+    optimizer.step()
+    return loss.item()
 
 def predict(model, X):
     """X (n_examples x n_features)"""
@@ -224,6 +235,7 @@ def main():
     _, test_acc = evaluate(model, test_X, test_y, criterion)
     print('Final Test acc: %.4f' % (test_acc))
     # plot
+    print(opt.model)
     if opt.model == "logistic_regression":
         config = (
             f"batch-{opt.batch_size}-lr-{opt.learning_rate}-epochs-{opt.epochs}-"
