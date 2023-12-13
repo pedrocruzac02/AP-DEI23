@@ -46,7 +46,7 @@ class Perceptron(LinearModel):
         other arguments are ignored
         """
         # Q1.1a
-        eta = 1 #default value
+        eta = 1 
         y_pred = np.argmax(self.W.dot(x_i))
         if y_pred != y_i:
             self.W[y_i, :] += eta * x_i
