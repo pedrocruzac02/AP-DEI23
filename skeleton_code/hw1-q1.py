@@ -80,7 +80,7 @@ class LogisticRegression(LinearModel):
 
 
 class MLP(object):
-    # Q3.2b. This MLP skeleton code allows the MLP to be used in place of the
+    # Q1.2b. This MLP skeleton code allows the MLP to be used in place of the
     # linear models with no changes to the training loop or evaluation code
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
