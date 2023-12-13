@@ -62,8 +62,6 @@ class LogisticRegression(LinearModel):
         learning_rate (float): keep it at the default value for your plots
         """
         # Q1.1b
-        # Label scores according to the model (num_labels x 1).
-        #label_scores = self.W.dot(x_i)[:, None]
         # Get probability scores according to the model (num_labels x 1).
         label_scores = np.expand_dims(W.dot(x), axis = 1)
         
