@@ -72,8 +72,9 @@ class LogisticRegression(LinearModel):
         # Softmax function.
         # This gives the label probabilities according to the model (num_labels x 1).
         label_probabilities = np.exp(label_scores) / np.sum(np.exp(label_scores))
+        
         # SGD update. W is num_labels x num_features.
-        self.W += learning_rate * (y_one_hot - label_probabilities) * x_i[None, :]
+        self.W += learning_rate * (y_one_hot - label_probabilities).dot(np.expand_dims(x,axis =1).T) 
 
 
 
