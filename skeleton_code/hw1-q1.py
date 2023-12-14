@@ -63,7 +63,7 @@ class LogisticRegression(LinearModel):
         """
         # Q1.1b
         # Get probability scores according to the model (num_labels x 1).
-        label_scores = np.expand_dims(W.dot(x), axis = 1)
+        label_scores = np.expand_dims(self.W.dot(x_i), axis = 1)
         
         # One-hot vector with the true label (num_labels x 1).
         y_one_hot = np.zeros((np.size(self.W, 0), 1))
@@ -72,9 +72,8 @@ class LogisticRegression(LinearModel):
         # Softmax function.
         # This gives the label probabilities according to the model (num_labels x 1).
         label_probabilities = np.exp(label_scores) / np.sum(np.exp(label_scores))
-        
         # SGD update. W is num_labels x num_features.
-        self.W += learning_rate * (y_one_hot - label_probabilities).dot(np.expand_dims(x,axis =1).T) 
+        self.W += learning_rate * (y_one_hot - label_probabilities).dot(np.expand_dims(x_i,axis =1).T) 
 
 
 
