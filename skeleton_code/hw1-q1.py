@@ -180,21 +180,18 @@ class MLP(object):
         """
         Dont forget to return the loss of the epoch.
         """
+        num_layers = len(self.W)
         for x, y in zip(X, Y):
           # Compute foward pass
           output, hiddens = self.forward(x)
           loss = self.compute_loss(output, y)
           grad_weights, grad_biases = self.backward(x, y, output, hiddens)
           self.update_parameters(grad_weights, grad_biases,learning_rate)
-          #print("Loss:",loss)
-          return loss
-
-    def update_parameters(self, grad_weights, grad_biases, learning_rate):
-        num_layers = len(self.W)
-        for i in range(num_layers):
+          for i in range(num_layers):
             self.W[i] -= learning_rate*grad_weights[i]
             self.B[i] -= learning_rate*grad_biases[i]
-
+              
+          return loss
 
 def plot(epochs, train_accs, val_accs):
     plt.xlabel('Epoch')
