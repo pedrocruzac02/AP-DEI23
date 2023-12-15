@@ -150,7 +150,6 @@ class MLP(object):
         return grad_weights, grad_biases
 
     def predict_label(self, output):
-        # The most probable label is also the label with the largest logit.
         y_pred = np.zeros_like(output)
         y_pred[np.argmax(output)] = 1
         return y_pred
