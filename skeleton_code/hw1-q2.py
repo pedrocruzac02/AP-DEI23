@@ -48,7 +48,7 @@ class LogisticRegression(nn.Module):
         backward pass.
         """
         x = self.layer(x)
-        x = self.activation(x) # comment this line to see if any difference
+        x = self.activation(x) 
         return x
 
 
@@ -70,23 +70,16 @@ class FeedforwardNetwork(nn.Module):
         includes modules for several activation functions and dropout as well.
         """
         super(FeedforwardNetwork,self).__init__()
-        print("Activation:",activation_type)
         self.activation = nn.ReLU()
-        print("Hidden Size:",hidden_size)
-        print("Number Layers:",layers)
-        print("Dropout:",dropout)
-
-        self.ff = nn.Sequential()
         self.dropout = nn.Dropout(dropout)
+                
+        self.ff = nn.Sequential()
 
-  
         self.input = nn.Linear(n_features,hidden_size)
         self.hidden = nn.Linear(hidden_size,hidden_size)
         self.output = nn.Linear(hidden_size,n_classes)
 
         #Input Layer
-        print("Self.Activation:",self.activation)
-        #print("Self.Activation_type:",self.activation_type)
         self.ff.append(self.input)
         self.ff.append(self.activation)
         self.ff.append(self.dropout)
