@@ -111,44 +111,38 @@ class MLP(object):
         return output, hiddens
 
 
-    def compute_label_probabilities(self, output):
-        # softmax transformation.
+    def softmax_transformation(self, output):
         probs = np.exp(output) / np.sum(np.exp(output))
         return probs
 
     def compute_loss(self , output, y):
-        # compute loss 
         y_one_hot_vector = np.zeros((self.n_classes,))
         y_one_hot_vector[y] = 1
-        probs = self.compute_label_probabilities(output)
+        probs = self.softmax_transformation(output)
         probs_log = np.log(probs)
         loss = -y_one_hot_vector.dot(np.log(probs))
         return loss 
 
-    def backward(self,x, y, output, hiddens):
-        output -= output.max()    
-        probs = self.compute_label_probabilities(output)
+    def backward(self,x, y, output, hiddens):   
+        probs = self.softmax_transformation(output)
     
         y_one_hot_vector = np.zeros((self.n_classes,))
         y_one_hot_vector[y] = 1
         
-        grad_z = probs - y_one_hot_vector # Grad of loss w.r.t. last z
+        grad_z = probs - y_one_hot_vector
 
         grad_weights = []
         grad_biases = []
 
         num_layers = len(self.W)
         for i in range(num_layers-1, -1, -1):
-            # dL/dW = dL/dz . h^T
+            # Gradient of hidden parameters.
             h = x if i == 0 else hiddens[i-1]
             grad_weights.append(grad_z[:, None].dot(h[:, None].T))
-            
-            # dL/db = dL/dz
             grad_biases.append(grad_z)
-
-            # dL/dh[i-1] = W[i]^T . dL/dz[i] 
+            # Gradient of hidden layer below.
             grad_h = self.W[i].T.dot(grad_z)
-            # dL /dz = dL/dh * dh/dz
+            # Gradient of hidden layer below before activation.
             grad_z = grad_h * self.derivateReLu(h)
 
         grad_weights.reverse()
