@@ -186,7 +186,6 @@ class MLP(object):
           output, hiddens = self.forward(x)
           loss = self.compute_loss(output, y)
           grad_weights, grad_biases = self.backward(x, y, output, hiddens)
-          self.update_parameters(grad_weights, grad_biases,learning_rate)
           for i in range(num_layers):
             self.W[i] -= learning_rate*grad_weights[i]
             self.B[i] -= learning_rate*grad_biases[i]
